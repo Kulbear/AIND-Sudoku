@@ -1,11 +1,25 @@
 assignments = []
 
+rows = 'ABCDEFGHI'
+cols = '123456789'
+
+def cross(a, b):
+    "Cross product of elements in A and elements in B."
+    return [s + t for s in a for t in b]
+
+boxes = cross(rows, cols)
+row_units = [cross(r, cols) for r in rows]
+column_units = [cross(rows, c) for c in cols]
+square_units = [cross(rs, cs) for rs in ('ABC', 'DEF', 'GHI') for cs in ('123', '456', '789')]
+unit_list = row_units + column_units + square_units
+units = dict((s, [u for u in unit_list if s in u]) for s in boxes)
+peers = dict((s, set(sum(units[s], [])) - {s}) for s in boxes)
+
 def assign_value(values, box, value):
     """
     Please use this function to update your values dictionary!
     Assigns a value to a given box. If it updates the board record it.
     """
-
     # Don't waste memory appending actions that don't actually change any values
     if values[box] == value:
         return values
@@ -23,13 +37,9 @@ def naked_twins(values):
     Returns:
         the values dictionary with the naked twins eliminated from peers.
     """
-
     # Find all instances of naked twins
     # Eliminate the naked twins as possibilities for their peers
-
-def cross(A, B):
-    "Cross product of elements in A and elements in B."
-    return [s + t for s in a for t in b]
+    pass
 
 def grid_values(grid):
     """
@@ -41,7 +51,13 @@ def grid_values(grid):
             Keys: The boxes, e.g., 'A1'
             Values: The value in each box, e.g., '8'. If the box has no value, then the value will be '123456789'.
     """
-    pass
+    values = list(grid)
+    all_digits = '123456789'
+    assert len(values) == len(boxes)
+    grid_dict = {}
+    for i in range(len(values)):
+        grid_dict[boxes[i]] = values[i] if values[i] != '.' else all_digits
+    return grid_dict
 
 def display(values):
     """
@@ -52,9 +68,9 @@ def display(values):
     width = 1 + max(len(values[s]) for s in boxes)
     line = '+'.join(['-' * (width * 3)] * 3)
     for r in rows:
-        print(''.join(values[r + c].center(width) + ('|' if c in '36' else '')
-                      for c in cols))
-        if r in 'CF': print(line)
+        print(''.join(values[r + c].center(width) + ('|' if c in '36' else '') for c in cols))
+        if r in 'CF':
+            print(line)
 
 
 def eliminate(values):
@@ -157,7 +173,8 @@ def solve(grid):
     return search(grid_values(grid))
 
 if __name__ == '__main__':
-    diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+    # diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+    diag_sudoku_grid = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
     display(solve(diag_sudoku_grid))
 
     try:
