@@ -94,10 +94,56 @@ def only_choice(values):
     return values
 
 def reduce_puzzle(values):
-    pass
+    """Reduce puzzle size.
+
+    Iterate eliminate() and only_choice(). If at some point, there is a box with no available values, return False.
+    If the sudoku is solved, return the sudoku.
+    If after an iteration of both functions, the sudoku remains the same, return the sudoku.
+
+    Args:
+        values(dict): Sudoku in dictionary form.
+    Returns:
+        Resulting Sudoku in dictionary form.
+    """
+    stalled = False
+    while not stalled:
+        # Check how many boxes have a determined value
+        solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
+        # Use the Eliminate Strategy
+        values = eliminate(values)
+        # Use the Only Choice Strategy
+        values = only_choice(values)
+        # Check how many boxes have a determined value, to compare
+        solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
+        # If no new values were added, stop the loop.
+        stalled = solved_values_before == solved_values_after
+        # Sanity check, return False if there is a box with zero available values:
+        if len([box for box in values.keys() if len(values[box]) == 0]):
+            return False
+    return values
 
 def search(values):
-    pass
+    """Using depth-first search and propagation, try all possible values.
+
+    Args:
+        values(dict): Sudoku in dictionary form.
+    Returns:
+        Sudoku solution (if solvable) in dictionary form.
+    """
+    values = reduce_puzzle(values)
+    if not values:
+        return False  # Failed search tree branch
+    if all(len(values[s]) == 1 for s in boxes):
+        return values  # Solved!
+    # Choose one of the unfilled squares with the fewest possibilities
+    _, s = min([(len(values[s]), s) for s in boxes if len(values[s]) > 1])
+    # Now use recurrence to solve each one of the resulting Sudokus, and
+    for value in values[s]:
+        new_sudoku = values.copy()
+        new_sudoku[s] = value
+        attempt = search(new_sudoku)
+        if attempt:
+            return attempt
 
 def solve(grid):
     """
@@ -108,6 +154,7 @@ def solve(grid):
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
     """
+    return search(grid_values(grid))
 
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
@@ -116,7 +163,6 @@ if __name__ == '__main__':
     try:
         from visualize import visualize_assignments
         visualize_assignments(assignments)
-
     except SystemExit:
         pass
     except:
