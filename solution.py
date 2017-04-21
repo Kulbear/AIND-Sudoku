@@ -11,7 +11,12 @@ boxes = cross(rows, cols)
 row_units = [cross(r, cols) for r in rows]
 column_units = [cross(rows, c) for c in cols]
 square_units = [cross(rs, cs) for rs in ('ABC', 'DEF', 'GHI') for cs in ('123', '456', '789')]
-unit_list = row_units + column_units + square_units
+diagnal_units=[[], []]
+for i in range(1, len(rows) + 1):
+    diagnal_units[0].append(rows[i - 1] + cols[i - 1])
+    diagnal_units[1].append(rows[i - 1] + cols[len(rows) - i])
+
+unit_list = row_units + column_units + square_units + diagnal_units
 units = dict((s, [u for u in unit_list if s in u]) for s in boxes)
 peers = dict((s, set(sum(units[s], [])) - {s}) for s in boxes)
 
@@ -29,21 +34,44 @@ def assign_value(values, box, value):
         assignments.append(values.copy())
     return values
 
-def naked_twins(values):
-    """Eliminate values using the naked twins strategy.
+def find_another_box_with_same_value(values, unit, box):
+    """Find another box has the same value with the value of a given box
+
     Args:
         values(dict): a dictionary of the form {'box_name': '123456789', ...}
+        unit(list): a list of a unit
+        box(string): the given box
+    Returns:
+        Another box has the same value if found, otherwise None
+    """
+    for another_box in unit:
+        if another_box != box:
+            if values[another_box] == values[box]:
+                return another_box
+    return None
 
+def naked_twins(values):
+    """Eliminate values using the naked twins strategy.
+
+    Args:
+        values(dict): a dictionary of the form {'box_name': '123456789', ...}
     Returns:
         the values dictionary with the naked twins eliminated from peers.
     """
-    # Find all instances of naked twins
-    # Eliminate the naked twins as possibilities for their peers
-    pass
+    for unit in unit_list:
+        for box in unit:
+            if len(values[box]) == 2:
+                another_box = find_another_box_with_same_value(values, unit, box)
+                if another_box:
+                    for possible_value in values[box]:
+                        for sub_box in unit:
+                            if sub_box != box and sub_box != another_box:
+                                values = assign_value(values, sub_box, values[sub_box].replace(possible_value, ''))
+    return values
 
 def grid_values(grid):
-    """
-    Convert grid into a dict of {square: char} with '123456789' for empties.
+    """Convert grid into a dict of {square: char} with '123456789' for empties.
+
     Args:
         grid(string) - A grid in string form.
     Returns:
@@ -60,8 +88,8 @@ def grid_values(grid):
     return grid_dict
 
 def display(values):
-    """
-    Display the values as a 2-D grid.
+    """Display the values as a 2-D grid.
+
     Args:
         values(dict): The sudoku in dictionary form
     """
@@ -125,9 +153,8 @@ def reduce_puzzle(values):
     while not stalled:
         # Check how many boxes have a determined value
         solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
-        # Use the Eliminate Strategy
         values = eliminate(values)
-        # Use the Only Choice Strategy
+        values = naked_twins(values)
         values = only_choice(values)
         # Check how many boxes have a determined value, to compare
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
@@ -162,8 +189,8 @@ def search(values):
             return attempt
 
 def solve(grid):
-    """
-    Find the solution to a Sudoku grid.
+    """Find the solution to a Sudoku grid.
+
     Args:
         grid(string): a string representing a sudoku grid.
             Example: '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
@@ -173,8 +200,8 @@ def solve(grid):
     return search(grid_values(grid))
 
 if __name__ == '__main__':
-    # diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
-    diag_sudoku_grid = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
+    diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+    # diag_sudoku_grid = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
     display(solve(diag_sudoku_grid))
 
     try:
