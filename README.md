@@ -3,11 +3,15 @@
 
 # Question 1 (Naked Twins)
 Q: How do we use constraint propagation to solve the naked twins problem?  
-A: We loop through all the units, for each loop, we check every box whether there exists another box has the same value with it. If yes, we will remove every single value existing in the box from any other boxes (other than these two) in the same unit.
+A: The "Naked Twins" strategy provides us additional constraints on possible value in a unit. If there are **n** boxes has identical **n** possible value, then these **n** possible values have to be shared only within these boxes, otherwise this is not a solvable Sudoku. In our case, we could only consider the case where **n = 2**.
+
+In short, the algorithm could be described as follow:
+
+We loop through all the units, for each loop, we check every box whether there exists another box has the same value with it. If yes, we will remove every single value existing in the box from any other boxes (other than these two) in the same unit.
 
 # Question 2 (Diagonal Sudoku)
 Q: How do we use constraint propagation to solve the diagonal sudoku problem?  
-A: Just add the two units of diagonal units to the unit list.
+A: Just add the two units of diagonal units to the unit list. Solving a diagonal Sudoku problem means we have additional constraints. When we consider who are peers of a given box, we need to consider whether the given box is on the diagonal. We also have 2 more units (from the 2 diagonal) when we need to evaluate our other constraints.
 
 ### Install
 
